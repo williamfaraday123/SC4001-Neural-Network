@@ -73,3 +73,40 @@ class EarlyStopper:
             if self.counter >= self.patience:
                 return True
         return False
+
+# Part_A_2
+class MLP(nn.Module):
+    def __init__(self, input_dim):
+        super().__init__()
+        self.mlp_stack = nn.Sequential(
+            # YOUR CODE HERE
+            nn.Linear(input_dim, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 1),
+            nn.Sigmoid()
+        )
+
+    # YOUR CODE HERE
+    def forward(self, x):
+        return self.mlp_stack(x)
+
+class CustomDataset(Dataset):
+    # YOUR CODE HERE
+    def __init__(self, X, y):
+        # Convert numpy arrays to PyTorch tensors
+        self.X = torch.tensor(X, dtype=torch.float32)
+        # Ensure y is a 2D tensor (column vector) for BCELoss
+        self.y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
+
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.y[idx]
