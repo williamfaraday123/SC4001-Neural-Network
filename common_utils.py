@@ -110,3 +110,17 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
+
+
+def initialise_loaders(X_train_scaled, y_train, X_test_scaled, y_test):
+    # YOUR CODE HERE
+    # Create instances of the CustomDataset
+    train_dataset = CustomDataset(X_train_scaled, y_train)
+    test_dataset = CustomDataset(X_test_scaled, y_test)
+
+    # Initialize DataLoaders
+    # Note: Training loader uses shuffle=True for better gradient descent
+    train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+
+    return train_dataloader, test_dataloader
