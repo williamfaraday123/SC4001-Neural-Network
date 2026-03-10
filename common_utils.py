@@ -124,3 +124,19 @@ def initialise_loaders(X_train_scaled, y_train, X_test_scaled, y_test):
     test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
     return train_dataloader, test_dataloader
+
+# Part_A_3
+class DynamicMLP(nn.Module):
+    def __init__(self, input_dim, arch):
+        super().__init__()
+        layers = []
+        current_dim = input_dim
+        for h_dim in arch:
+            layers.append(nn.Linear(current_dim, h_dim))
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(0.3))
+            current_dim = h_dim
+        layers.append(nn.Linear(current_dim, 1))
+        layers.append(nn.Sigmoid())
+        self.mlp_stack = nn.Sequential(*layers)
+    def forward(self, x): return self.mlp_stack(x)11
