@@ -139,4 +139,4 @@ class DynamicMLP(nn.Module):
         layers.append(nn.Linear(current_dim, 1))
         layers.append(nn.Sigmoid())
         self.mlp_stack = nn.Sequential(*layers)
-    def forward(self, x): return self.mlp_stack(x)11
+    def forward(self, x): return self.mlp_stack(x)
