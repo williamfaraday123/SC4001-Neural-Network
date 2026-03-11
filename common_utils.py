@@ -140,3 +140,61 @@ class DynamicMLP(nn.Module):
         layers.append(nn.Sigmoid())
         self.mlp_stack = nn.Sequential(*layers)
     def forward(self, x): return self.mlp_stack(x)
+
+def train(model, X_train_scaled, y_train2, X_val_scaled, y_val2, learning_rate):
+
+    # YOUR CODE HERE
+    train_loader, val_loader = initialise_loaders(X_train_scaled, y_train2, X_val_scaled, y_val2)
+
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.0005)
+    loss_fn = nn.BCELoss()
+    stopper = EarlyStopper(patience=5) # Using the provided EarlyStopper
+
+    train_accuracies, train_losses = [], []
+    test_accuracies, test_losses = [], []
+    times = []
+
+    for epoch in range(1, 201):
+        start_time = time.time()
+        model.train()
+        running_loss = 0.0
+        correct = 0
+        total = 0
+
+        for batch_X, batch_y in train_loader:
+            optimizer.zero_grad()
+            outputs = model(batch_X)
+            loss = loss_fn(outputs, batch_y)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            correct += ((outputs > 0.5).float() == batch_y).sum().item()
+            total += batch_y.size(0)
+
+        train_losses.append(running_loss / len(train_loader))
+        train_accuracies.append(correct / total)
+
+        # Validation
+        model.eval()
+        val_loss = 0.0
+        val_correct = 0
+        val_total = 0
+        with torch.no_grad():
+            for vX, vy in val_loader:
+                v_out = model(vX)
+                val_loss += loss_fn(v_out, vy).item()
+                val_correct += ((v_out > 0.5).float() == vy).sum().item()
+                val_total += vy.size(0)
+
+        avg_val_loss = val_loss / len(val_loader)
+        test_losses.append(avg_val_loss)
+        test_accuracies.append(val_correct / val_total)
+        times.append(time.time() - start_time)
+
+        # Early Stopping
+        if stopper.early_stop(avg_val_loss):
+            break
+
+    return train_accuracies, train_losses, test_accuracies, test_losses, times
+
